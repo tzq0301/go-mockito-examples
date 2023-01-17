@@ -10,9 +10,9 @@ $ go get github.com/bytedance/mockey@latest
 
 ```go
 import (
-	. "github.com/bytedance/mockey"
-	. "github.com/smartystreets/goconvey/convey"
-	"testing"
+    . "github.com/smartystreets/goconvey/convey"
+    . "github.com/bytedance/mockey"
+    "testing"
 )
 ```
 
@@ -20,9 +20,9 @@ import (
 
 ### Example 1 - Mock 变量
 
-假设有一个变量 `superUsers`，其值是通过 RPC 来获取的
+**假设有一个变量 `superUsers`，其值是通过 RPC 来获取的**
 
-我们要测 `isSuperUser` 函数的话，应该屏蔽掉 superUsers 这个外部依赖，可以使用 `MockValue` 函数，传入变量的地址即可
+我们要测 `isSuperUser` 函数的话，应该**屏蔽掉 superUsers 这个外部依赖**，可以使用 `MockValue` 函数，**传入变量的地址**即可
 
 ```go
 // example1/example.go
@@ -30,17 +30,17 @@ import (
 var superUsers []string = getSuperUsers()
 
 func getSuperUsers() []string {
-	// Get From RPC
-	return nil
+    // Get From RPC
+    return nil
 }
 
 func isSuperUser(user string) bool {
-	for _, superUser := range superUsers {
-		if superUser == user {
-			return true
-		}
-	}
-	return false
+    for _, superUser := range superUsers {
+        if superUser == user {
+            return true
+        }
+    }
+    return false
 }
 ```
 
@@ -48,20 +48,20 @@ func isSuperUser(user string) bool {
 // example1/example_test.go
 
 func Test_isSuperUser(t *testing.T) {
-	PatchConvey("", t, func() {
-		MockValue(&superUsers).To([]string{"super1", "super2", "super3"})
+    PatchConvey("", t, func() {
+        MockValue(&superUsers).To([]string{"super1", "super2", "super3"})  // Here
 
-		So(isSuperUser("super1"), ShouldBeTrue)
-		So(isSuperUser("super4"), ShouldBeFalse)
-	})
+        So(isSuperUser("super1"), ShouldBeTrue)
+        So(isSuperUser("super4"), ShouldBeFalse)
+    })
 }
 ```
 
 ### Example 2 - Mock 函数行为
 
-假设 `getSuperUsers` 函数将通过 RPC 来获取数据，那么我们要测 `isSuperUser` 函数时必须 Mock 掉这个外部依赖
+**假设 `getSuperUsers` 函数将通过 RPC 来获取数据**，那么我们要测 `isSuperUser` 函数时必须 **Mock 掉这个外部依赖**
 
-可以使用 `Mock(..).To(..).Build()` 来 Mock 函数的行为
+可以使用 `Mock(..).To(..).Build()` 来 Mock 函数的**行为**
 
 * `To(..)` 中传的参数是跟你要 Mock 的函数相同签名的函数（参考示例 `func() []string`）
 * 记得调用 `.Build(..)`
@@ -70,21 +70,21 @@ func Test_isSuperUser(t *testing.T) {
 // example2/example.go
 
 func getSuperUsers() []string {
-	// Get From RPC
-	var superUsers []string
-	for i := 1; i <= 3; i++ {
-		superUsers = append(superUsers, fmt.Sprintf("super%d from rpc", i))
-	}
-	return superUsers
+    // Get From RPC
+    var superUsers []string
+    for i := 1; i <= 3; i++ {
+        superUsers = append(superUsers, fmt.Sprintf("super%d from rpc", i))
+    }
+    return superUsers
 }
 
 func isSuperUser(user string) bool {
-	for _, superUser := range getSuperUsers() {
-		if superUser == user {
-			return true
-		}
-	}
-	return false
+    for _, superUser := range getSuperUsers() {
+        if superUser == user {
+            return true
+        }
+    }
+    return false
 }
 ```
 
@@ -93,7 +93,7 @@ func isSuperUser(user string) bool {
 
 func Test_isSuperUser(t *testing.T) {
     PatchConvey("", t, func() {
-        Mock(getSuperUsers).To(func() []string {
+        Mock(getSuperUsers).To(func() []string { // Here
             var superUsers []string
             for i := 1; i <= 3; i++ {
                 superUsers = append(superUsers, fmt.Sprintf("super%d", i))
@@ -107,18 +107,18 @@ func Test_isSuperUser(t *testing.T) {
 }
 ```
 
-### Example 3 - 直接 Mock 函数返回值
+### Example 3 - 直接 Mock 函数返回值（方便 & 常用）
 
 需求同 Example 2，需要对 `isSuperUser` 函数进行单测，并 Mock 掉 `getSuperUsers` 函数
 
-可以直接 Mock `getSuperUsers` 函数的返回值，更加方便快捷
+可以**直接 Mock `getSuperUsers` 函数的返回值**，更加方便快捷
 
 ```go
 // example3/example_test.go
 
 func Test_isSuperUser(t *testing.T) {
     PatchConvey("", t, func() {
-        Mock(getSuperUsers).Return([]string{"super1", "super2", "super3"}).Build()
+        Mock(getSuperUsers).Return([]string{"super1", "super2", "super3"}).Build() // Here
         
         So(isSuperUser("super1"), ShouldBeTrue)
         So(isSuperUser("super4"), ShouldBeFalse)
@@ -137,35 +137,35 @@ func Test_isSuperUser(t *testing.T) {
 // example4/example.go
 
 func refresh() {
-	log.Println("refreshing...")
-	log.Println("refreshing...")
+    log.Println("refreshing...")
+    log.Println("refreshing...")
 }
 
 func isSuperUser(user string) bool {
-	go refresh()
+    go refresh()
 
-	return strings.HasPrefix(user, "super")
+    return strings.HasPrefix(user, "super")
 }
 ```
 
-一个比较取巧的方法是对 `go refresh()` 语句进行封装，然后 Mock 掉封装函数的行为
+一个比较取巧的方法是**对 `go refresh()` 语句进行封装，然后 Mock 掉封装函数的行为**
 
 ```go
 // example4/example.go
 
 func refresh() {
-	log.Println("refreshing...")
-	log.Println("refreshing...")
+    log.Println("refreshing...")
+    log.Println("refreshing...")
 }
 
 func refreshAsync() {
-	go refresh()
+    go refresh()
 }
 
 func isSuperUser(user string) bool {
-	refreshAsync()
+    refreshAsync()
 
-	return strings.HasPrefix(user, "super")
+    return strings.HasPrefix(user, "super")
 }
 ```
 
@@ -173,17 +173,17 @@ func isSuperUser(user string) bool {
 // example4/example_test.go
 
 func Test_isSuperUser(t *testing.T) {
-	PatchConvey("", t, func() {
-		//Mock(refresh).To(func() {}).Build()
-		Mock(refreshAsync).To(func() {}).Build()
+    PatchConvey("", t, func() {
+        //Mock(refresh).To(func() {}).Build()
+        Mock(refreshAsync).To(func() {}).Build()
 
-		So(isSuperUser("super1"), ShouldBeTrue)
-		So(isSuperUser("user1"), ShouldBeFalse)
-	})
+        So(isSuperUser("super1"), ShouldBeTrue)
+        So(isSuperUser("user1"), ShouldBeFalse)
+    })
 }
 ```
 
-### Example 5 - Mock 接口的私有实现结构体的方法
+### Example 5 - Mock 接口的私有实现结构体的方法（常用）
 
 在实际开发中，经常对 Handler、Service 这类进行接口抽象，只暴露接口签名，将实例化该接口私有实现结构体的步骤封装为一个 `NewXxxx` 方法
 
@@ -195,32 +195,32 @@ func Test_isSuperUser(t *testing.T) {
 // example5/example.go
 
 type Service interface {
-	PingPong(ping string) (pong string)
+    PingPong(ping string) (pong string)
 }
 
 func NewService() Service {
-	return &serviceImpl{}
+    return &serviceImpl{}
 }
 
 type serviceImpl struct{}
 
 func (e serviceImpl) PingPong(ping string) (pong string) {
-	log.Println("Begin Do some RPC Call !!!")
-	pong = ping
-	log.Println("End   Do some RPC Call !!!")
-	return
+    log.Println("Begin Do some RPC Call !!!")
+    pong = ping
+    log.Println("End   Do some RPC Call !!!")
+    return
 }
 
 // --------------------------------------------------------
 
 type Handler struct {
-	service Service
+    service Service
 }
 
 // 测这个方法！！！！！！！！！！！！！！！！！！！！！！！
 func (h Handler) PingPong(ping string) (pong string) {
-	pong = h.service.PingPong(ping)
-	return
+    pong = h.service.PingPong(ping)
+    return
 }
 ```
 
@@ -230,16 +230,16 @@ func (h Handler) PingPong(ping string) (pong string) {
 // example5/example_test.go
 
 func TestHandler_PingPong(t *testing.T) {
-	PatchConvey("", t, func() {
-		h := Handler{service: NewService()}
+    PatchConvey("", t, func() {
+        h := Handler{service: NewService()}
 
-		Mock(Service.PingPong).To(func(ping string) (pong string) {
-			pong = ping
-			return
-		}).Build()
+        Mock(Service.PingPong).To(func(ping string) (pong string) {
+            pong = ping
+            return
+        }).Build()
 
-		So(h.PingPong("111"), ShouldEqual, "111")
-	})
+        So(h.PingPong("111"), ShouldEqual, "111")
+    })
 }
 ```
 
