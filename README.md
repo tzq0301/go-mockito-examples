@@ -251,16 +251,16 @@ func TestHandler_PingPong(t *testing.T) {
 // example5/example_test.go
 
 func TestHandler_PingPong(t *testing.T) {
-	PatchConvey("", t, func() {
-		h := Handler{service: NewService()}
-
+    PatchConvey("", t, func() {
+        h := Handler{service: NewService())
+        
         Mock(GetMethod(h.service, "PingPong")).To(func(ping string) (pong string) {
             pong = ping
             return
         }).Build()
-
-		So(h.PingPong("111"), ShouldEqual, "111")
-	})
+        
+        So(h.PingPong("111"), ShouldEqual, "111")
+    })
 }
 ```
 
